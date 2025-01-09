@@ -1,26 +1,34 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { AuthDto } from './dto/auth.dto';
+import { JwtService } from '@nestjs/jwt';
+import { UsuarioService } from 'src/usuario/usuario.service';
+import * as bcrypt from 'bcrypt';
+
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+
+  constructor(private readonly jwtService:JwtService,
+    private readonly usuarioService:UsuarioService
+){}
+
+  signUp(dto:AuthDto){
+    this.usuarioService.create(dto)
+    return this.signIn(dto);
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  async signIn(dto:AuthDto) {
+    const foundedUser = await this.usuarioService.findByEmail(dto.email)
+    if(!foundedUser || !bcrypt.compare(dto.senha,foundedUser.senha)) return new HttpException('Usuário não encontrado',HttpStatus.NOT_FOUND)
+    const payload = {
+      username: foundedUser.email, 
+      sub:foundedUser.id
+    }
+    return {acessToken:this.jwtService.sign(payload)};
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+  signOut() {
+    return 'SignOut';
   }
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
-  }
 }

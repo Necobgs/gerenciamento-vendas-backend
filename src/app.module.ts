@@ -4,24 +4,14 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UsuarioModule } from './usuario/usuario.module';
 import * as path from 'path';
 
-
 @Module({
-  imports: [AuthModule,
+  imports: [
     ConfigModule.forRoot({
       isGlobal:true
     }),
-    // TypeOrmModule.forRoot({
-    //   type: 'postgres', // ou o tipo do seu banco
-    //   host: 'localhost', 
-    //   port: 5432,
-    //   username: 'postgres', 
-    //   password: 'papagaio',
-    //   database: 'gerenciamento-vendas',
-    //   entities: [__dirname + '/**/*.entity{.ts,.js}'], // Garante que ele encontre tanto .ts quanto .js
-    //   synchronize: true,
-    // })
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -35,7 +25,8 @@ import * as path from 'path';
         entities: [path.join(__dirname, "**/*.entity{.ts,.js}")],
         synchronize:true
       })
-    })
+    }),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
